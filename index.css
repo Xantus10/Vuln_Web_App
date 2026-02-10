@@ -1,0 +1,278 @@
+* {
+  box-sizing: border-box;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: whitesmoke;
+}
+
+:root {
+  --grey: rgb(90, 90, 90);
+  --dark-green: rgb(17, 70, 0);
+  --dark-cyan: rgb(0, 35, 30);
+  --dark-grey: rgb(65, 65, 65);
+  --darkest-cyan: rgb(0, 25, 20);
+  --darkest-grey: rgb(22, 22, 22);
+  --nav-sep-angle: 0deg;
+  --footer-h: 5vw
+}
+
+html, body {
+  margin: 0;
+  min-height: 100vh;
+  background-image: linear-gradient(45deg, var(--dark-green), var(--darkest-cyan));
+}
+
+h1, h2, h3, h4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+h1 + p, h2 + p, h3 + p, h4 + p {
+  margin-top: 1.5rem;
+}
+
+.cont {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+input, textarea {
+  background-color: var(--grey);
+  padding: 0.3rem;
+}
+
+input::placeholder {
+  color: whitesmoke;
+}
+
+input[type="submit"] {
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background-color: var(--dark-grey);
+}
+
+img {
+  max-width: 400px;
+}
+
+figcaption {
+  color: var(--grey);
+}
+
+table, tr, td, th {
+  border: 1px solid whitesmoke;
+  padding: 0.3rem;
+  border-collapse: collapse;
+}
+
+input, textarea {
+  border: 2px inset var(--grey);
+  transition: border-color 0.3s ease;
+}
+
+input:hover, textarea:hover {
+  border-color: cyan;
+}
+
+.header {
+  padding: 0.5rem 2rem;
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.95)),
+                    url("img/bg.png");
+  background-repeat: repeat;
+  background-position: left top, left top;
+
+  background-size: cover, auto;
+}
+
+#main-subtitle {
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 1.2rem;
+}
+
+.header, .main, .footer {
+  min-width: 450px;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  min-width: 15rem;
+}
+
+.nav a, .nav-sep {
+  border: 1px solid black;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.5rem;
+}
+
+.nav a {
+  text-decoration: none;
+
+  background-size: 200% 100%;
+  background-position: 0 50%;
+  background-image: linear-gradient(to right, var(--dark-cyan), var(--dark-cyan) 50%, black 50%, black);
+}
+
+.nav a:hover {
+  animation: trans 0.5s reverse forwards;
+}
+
+@keyframes trans {
+  from {
+    background-position: -100%, 50%;
+  } to {
+    background-position: 0% 50%;
+  }
+}
+
+.nav a div {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: lightgreen;
+}
+
+.nav .nav-sep {
+  background-image: repeating-linear-gradient(var(--nav-sep-angle), black 0%, black 11%, var(--dark-cyan) 11%, var(--dark-cyan) 22%, black 22%, black 34%);
+  cursor: initial;
+}
+
+.nav .current {
+  background-image: none;
+  background-color: black !important;
+  cursor: default !important;
+}
+
+.article {
+  width: 100%;
+  background-color: var(--darkest-grey);
+  padding: 1rem 1rem 1rem 1rem;
+}
+
+.article > p {
+  max-width: 100%;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background-image: linear-gradient(45deg, rgb(0, 0, 0), var(--darkest-cyan));
+}
+
+.footer p,a {
+  text-align: center;
+  margin: 0;
+}
+
+.subpage-container {
+  margin: auto;
+  border: 5px solid black;
+  padding: 0.5rem;
+  width: 100%;
+  min-width: 340px;
+}
+
+.mono {
+  font-family: "Cascadia Mono", Consolas, monospace;
+}
+
+.red {
+  color: red;
+  font-family: inherit;
+}
+
+.green {
+  color: lightgreen;
+  font-family: inherit;
+}
+
+
+/* media for tablet */
+
+@media (min-width: 800px) {
+  .footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+  }
+
+  .footer p,a {
+    margin: revert;
+  }
+
+  .footer > p:first-child {
+    text-align: left;
+  }
+
+  .main {
+    margin: auto;
+    flex-direction: row;
+    min-height: 50vh;
+  }
+  
+  .subpage-container {
+    margin-left: 2rem;
+    width: 70%;
+  }
+
+  .article {
+    padding: 1rem 2rem 1rem 3rem;
+  }
+
+  .article > p {
+    max-width: 70%;
+  }
+}
+
+
+
+/* media for desktop */
+
+@media (min-width: 1300px) {
+  .main {
+    flex-direction: column;
+    width: 80vw;
+  }
+
+  :root {
+    --nav-sep-angle: 90deg;
+  }
+
+  .nav {
+    flex-direction: row;
+  }
+
+  .subpage-container {
+    width: 50%;
+  }
+
+  .article > p {
+    max-width: 50%;
+  }
+
+  figure {
+    float: right;
+  }
+
+  figure > img {
+    float: none;
+  }
+
+  img {
+    float: right;
+  }
+}
