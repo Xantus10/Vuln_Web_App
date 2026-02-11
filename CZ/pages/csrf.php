@@ -2,7 +2,7 @@
 
 <p>Cross Site Request Forgery je útok, kdy akcí na jedné stránce můžete nevědomky udělat jinou akci na úplně jiné stránce. Jak? Vysvětlíme.</p>
 
-<p>Budeme používat příklad banky. Když se do webové aplikace banky přihlásíte, nastaví se vám autentizační cookie pro doménu <span class="mono">banka.cz</span>. Když pak chcete převést peníze, pošlete request na <span class="mono">banka.cz/prevod</span>. Prohlížeč se podívá, jestli pro tuto doménu má uložené nějaké cookies a zjistí, že ano (vaši auth cookie), a tak ji pošle taky. Díky tomu banka ví, že to vy chcete poslat peníze.</p>
+<p>Budeme používat příklad banky. Když se do webové aplikace banky přihlásíte, nastaví se vám autentizační cookie pro doménu <span class="mono">banka.cz</span>. Když pak chcete převést peníze, kliknete na stránce a pošlete request na <span class="mono">banka.cz/prevod</span>. Prohlížeč se podívá, jestli pro tuto doménu má uložené nějaké cookies a zjistí, že ano (vaši auth cookie), a tak ji pošle taky. Díky tomu banka ví, že to vy chcete poslat peníze.</p>
 
 <p>A teď CSRF. Máme naši stránku, na které je obrázek kočičky s nápisem klikni mě. Ve skutečnosti kliknutí na tento obrázek pošle request na <span class="mono">banka.cz/prevod</span>. Ale to je v pohodě ne? Přeci jsme na jiné stránce a zde jsme se do banky nehlásili. Ale prohlížeč prostě uvidí "aha jde nějaký request, mám k této doméně nějaké cookies?", a pokud ano, tak je prostě pošle (nezáleží na tom, že nejsme na správné stránce).</p>
 
