@@ -23,4 +23,12 @@ Would you like to use this app? No problem! Here are the necessary steps.
 
 ## Security concerns
 
-Yes, the app is vulnerable and you do not want anyone taking over your server (I understand). Don't worry, There is not a single RCE vulnerability in this application (they are discussed, but are not implemented). Most of the attacks are purely web based, not even interacting with the server OS. The one exception to this is LFI. Therefore it is vital to run the application as unprivileged user, **NOT ROOT**, and have all the basic defenses in place (like proper permissions on ssh authorized_keys file).
+Yes, the app is vulnerable and you do not want anyone taking over your server (I understand). Don't worry, There is not a single RCE vulnerability in this application (they are discussed, but are not implemented). Most of the attacks are purely web based, not even interacting with the server OS. The one exception to this is LFI. Therefore it is vital to run the application as unprivileged user, **NOT ROOT**, and have all the basic defenses in place (like proper permissions on ssh authorized_keys files, etc.).
+
+## Xtended
+
+**VulnXtended** is a standalone sequel to the Vuln web app. Now with no restrictions on security, so it features anything up to multiple RCE type vulnerabilities. Because of this, VulnXtended should be only ever deployed locally in an isolated environment, as the vulnerabilities in the app lead directly to full server control.
+
+**I repeat, do not deploy the VulnXtended publicly. You WILL get hacked!**
+
+(Note: VulnXtended is only in English)
