@@ -122,7 +122,7 @@ if (isset($_POST["form"])) {
   <meta name="description" content="Aplikace pro showcase a paktickou exploitaci určitých webových útoků">
   <meta name="author" content="Jroslav Žaba">
   <link rel="stylesheet" href="index.css">
-  <title>Vuln | Webové útoky</title>
+  <title>Vuln | Web attacks</title>
 </head>
 <body>
   <div class="cont">
