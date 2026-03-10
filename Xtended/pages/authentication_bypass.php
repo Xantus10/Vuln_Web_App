@@ -1,8 +1,12 @@
 <?php
+
+### Sessions
+
 $SESSIONFILE = 'session.txt';
 
 $AUTH_SESSION_USERNAME = null;
 
+$AUTH_SESSION_COOKIENAME = "AUTH_SESSION";
 
 if (file_exists($SESSIONFILE)) {
   $sessionData = null;
@@ -15,8 +19,8 @@ if (file_exists($SESSIONFILE)) {
       $sessionData = null; // invalid JSON
   }
 
-  if ($sessionData != null && isset($_COOKIE["AUTH_SESSION"])) {
-    $cookie = $_COOKIE["AUTH_SESSION"];
+  if ($sessionData != null && isset($_COOKIE[$AUTH_SESSION_COOKIENAME])) {
+    $cookie = $_COOKIE[$AUTH_SESSION_COOKIENAME];
     foreach ($sessionData as $sess) {
       if ($cookie === $sess["ssid"]) {
         $AUTH_SESSION_USERNAME = $sess["username"];
@@ -35,6 +39,50 @@ if (file_exists($SESSIONFILE)) {
   }
 }
 
+### JWT 1
+
+include_once("../components/jwt.php");
+
+$AUTH_JWT_1 = null;
+$AUTH_JWT_1_ROLE = null;
+
+$AUTH_JWT_1_COOKIENAME = "AUTH_JWT_1";
+
+$AUTH_JWT_1_KEY = "SuperSecretJWTHS256Key***Yea?";
+
+if (isset($_COOKIE[$AUTH_JWT_1_COOKIENAME])) {
+  $token = $_COOKIE[$AUTH_JWT_1_COOKIENAME];
+  if (!JWT::verify($token, $AUTH_JWT_1_KEY)) {
+    $AUTH_JWT_1 = false;
+  } else {
+    $data = JWT::decode($token);
+    $AUTH_JWT_1 = $data['payload']['username'];
+    $AUTH_JWT_1_ROLE = $data['payload']['role'];
+  }
+}
+
+### JWT 2
+
+$AUTH_JWT_2 = null;
+$AUTH_JWT_2_ROLE = null;
+
+$AUTH_JWT_2_COOKIENAME = "AUTH_JWT_2";
+
+$AUTH_JWT_2_PRIV_KEY = file_get_contents("keys/private.pem");
+$AUTH_JWT_2_PUB_KEY = file_get_contents("keys/public.pem");
+
+if (isset($_COOKIE[$AUTH_JWT_2_COOKIENAME])) {
+  $token = $_COOKIE[$AUTH_JWT_2_COOKIENAME];
+  if (!JWT::verify($token, $AUTH_JWT_2_PUB_KEY)) {
+    $AUTH_JWT_2 = false;
+  } else {
+    $data = JWT::decode($token);
+    $AUTH_JWT_2 = $data['payload']['username'];
+    $AUTH_JWT_2_ROLE = $data['payload']['role'];
+  }
+}
+
+### Form submission
 
 if (isset($_POST["form"])) {
   $pth = $_SERVER['REQUEST_URI'];
@@ -53,7 +101,7 @@ if (isset($_POST["form"])) {
 
       $result = "$hash-$date-$random";
 
-      setcookie("AUTH_SESSION", $result);
+      setcookie($AUTH_SESSION_COOKIENAME, $result);
       $sessions = [];
 
       // 2. Load existing sessions if file exists
@@ -75,6 +123,18 @@ if (isset($_POST["form"])) {
       // Save back to file
       file_put_contents($SESSIONFILE, json_encode($sessions, JSON_PRETTY_PRINT));
     }
+  } elseif ($form == "jwt_auth_1") {
+    $username = $_POST['username'];
+
+    $token = JWT::sign(["username" => $username, "role" => "user"], $AUTH_JWT_1_KEY, "HS256");
+
+    setcookie($AUTH_JWT_1_COOKIENAME, $token);
+  } elseif ($form == "jwt_auth_2") {
+    $username = $_POST['username'];
+
+    $token = JWT::sign(["username" => $username, "role" => "user"], $AUTH_JWT_2_PRIV_KEY, "RS256");
+
+    setcookie($AUTH_JWT_2_COOKIENAME, $token);
   }
 
   return header("Location: {$pth}");
@@ -121,12 +181,12 @@ if (isset($_POST["form"])) {
 <br>
 <p class="mono">$result = "$hash-$date-$random";</p>
 <br>
-<p class="mono">setcookie("AUTH_SESSION", $result);</p>
+<p class="mono">setcookie($AUTH_SESSION_COOKIENAME, $result);</p>
 
 <p>Now, knowing that the admin has logged in just today, can you manufacture a valid SSID for him?</p>
 
 <div class="subpage-container">
-  <p>Login</p>
+  <p>Login session</p>
   <form action="" method="post">
     <input type="hidden" name="form" value="session_auth">
     <label for="username">Username: </label>
@@ -137,7 +197,7 @@ if (isset($_POST["form"])) {
         echo "<p class=\"green\">Logged in as {$AUTH_SESSION_USERNAME}</p>";
       }
       if (isset($_GET["sserr"])) {
-        echo "<p class=\"green\">You cannot log in as admin</p>";
+        echo "<p class=\"red\">You cannot log in as admin</p>";
       }
     ?>
   </form>
@@ -150,7 +210,7 @@ if (isset($_POST["form"])) {
 <p>The signature is some control value. To compute this value, you need some secret key that the server uses. The exact signature depends on the used algorithm. These are the main ones:</p>
 
 <ul>
-  <li><p>None - Don't check the signature (ignore it)</p></li>
+  <li><p>none - Don't check the signature (ignore it)</p></li>
   <li><p>HS - HMAC, compute hash with the secret key, only the server with the key can verify it</p></li>
   <li><p>RS - RSA signature, uses private key for signing, anyone can verify the token with public key</p></li>
 </ul>
@@ -169,4 +229,87 @@ if (isset($_POST["form"])) {
 
 <p>Now let's try various ways of breaking it.</p>
 
+<h3>"alg": "none"</h3>
 
+<p>You surely noticed something strange in those algorithm options, that being the <span class="mono">'none'</span> option. Your first task is simple:</p>
+
+<ol>
+  <li><p>Get the JWT token form your cookie</p></li>
+  <li><p>Change its <span class="mono">'alg'</span> value to <span class="mono">'none'</span></p></li>
+  <li><p>Change your role to admin</p></li>
+</ol>
+
+<div class="subpage-container">
+  <p>Login JWT 1</p>
+  <form action="" method="post">
+    <input type="hidden" name="form" value="jwt_auth_1">
+    <label for="username">Username: </label>
+    <input type="text" name="username" id="username" placeholder="User123" required><br>
+    <input type="submit">
+    <?php
+      if (isset($AUTH_JWT_1)) {
+        if (!$AUTH_JWT_1) {
+          echo "<p class=\"red\">Your JWT token is invalid!</p>";
+        } else {
+          echo "<p class=\"green\">Logged in as {$AUTH_JWT_1}</p>";
+          if (isset($AUTH_JWT_1_ROLE)) {
+            echo "<p class=\"green\">Your role is $AUTH_JWT_1_ROLE</p>";
+          }
+        }
+      }
+    ?>
+  </form>
+</div>
+
+<h3>JWT confusion attack</h3>
+
+<p>And we don't have to change the topic from the algorithms yet. There is still one more trick up my sleeve. The JWT confusion attack!</p>
+
+<p>Picture this, you use the RS256 alg for JWT, therefore you keep your PRIVATE KEY on your server and you use it for signing. You post your PUBLIC KEY, well ... publicly, and you + anyone else can use it for verification. This is the important bit, you use the PUBLIC KEY for <b>verification</b>.</p>
+
+<p>Then what if you change your alg to HS256? Your HMAC will get computed using the verification key = PUBLIC KEY. Now if only you could obtain this PUBLIC KEY, then you could sign your own JWT with HS256 and have the server verify it like that!</p>
+
+<p>In summary:</p>
+
+<ol>
+  <li><p>Verify if the JWT uses RS256 alg</p></li>
+  <li><p>Check if PUBLIC KEY is accessible</p></li>
+  <li><p>Sign your own token with HS256 and use the PUBLIC KEY as key</p></li>
+  <li><p>Use your crafted token and try your luck</p></li>
+</ol>
+
+<p>Your task is once again to have the app recognize your role as admin.</p>
+
+<p>Note: you could just do the 'none' attack again, but what would you learn from it?</p>
+
+<?php
+echo "<p class=\"mono\">{$AUTH_JWT_2_PUB_KEY}</p>";
+?>
+
+<div class="subpage-container">
+  <p>Login JWT 2</p>
+  <form action="" method="post">
+    <input type="hidden" name="form" value="jwt_auth_2">
+    <label for="username">Username: </label>
+    <input type="text" name="username" id="username" placeholder="User123" required><br>
+    <input type="submit">
+    <?php
+      if (isset($AUTH_JWT_2)) {
+        if (!$AUTH_JWT_2) {
+          echo "<p class=\"red\">Your JWT token is invalid!</p>";
+        } else {
+          echo "<p class=\"green\">Logged in as {$AUTH_JWT_2}</p>";
+          if (isset($AUTH_JWT_2_ROLE)) {
+            echo "<p class=\"green\">Your role is $AUTH_JWT_2_ROLE</p>";
+          }
+        }
+      }
+    ?>
+  </form>
+</div>
+
+<h3>Using LFI</h3>
+
+<p>Finally, as you can probably guess, the whole security of JWT depends on the <b>secret</b> key. But guess what? This secret key has to be stored somewhere. And if it happens to be in a file, then you could read it with something like LFI!</p>
+
+<p>That is why LFI is such a dangerous vulnerability. Not because the attacker can read <span class="mono">/etc/passwd</span> and find out there is a user named bob, but because it can lead to leakage of other secret keys / data. Therefore things can escalate from "I can only read some files with LFI" to "I can craft JWT and get web admin privileges".</p>
