@@ -3,7 +3,8 @@
  * Define the pages of the app
  */
 define("PAGES", ["home" => ["file" => "home.php", "name" => "Home"],
-                                      "lfi" => ["file" => "lfi.php", "name" => "LFI"]]);
+                                      "lfi" => ["file" => "lfi.php", "name" => "LFI"],
+                                      "auth" => ["file" => "authentication_bypass.php", "name" => "Authentication Bypass"]]);
 
 /**
  * Default page
