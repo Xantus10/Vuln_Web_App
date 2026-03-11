@@ -41,7 +41,7 @@ if (file_exists($SESSIONFILE)) {
 
 ### JWT 1
 
-include_once("../components/jwt.php");
+include_once("components/jwt.php");
 
 $AUTH_JWT_1 = null;
 $AUTH_JWT_1_ROLE = null;
@@ -68,8 +68,8 @@ $AUTH_JWT_2_ROLE = null;
 
 $AUTH_JWT_2_COOKIENAME = "AUTH_JWT_2";
 
-$AUTH_JWT_2_PRIV_KEY = file_get_contents("keys/private.pem");
-$AUTH_JWT_2_PUB_KEY = file_get_contents("keys/public.pem");
+$AUTH_JWT_2_PRIV_KEY = file_get_contents("pages/keys/private.pem");
+$AUTH_JWT_2_PUB_KEY = file_get_contents("pages/keys/public.pem");
 
 if (isset($_COOKIE[$AUTH_JWT_2_COOKIENAME])) {
   $token = $_COOKIE[$AUTH_JWT_2_COOKIENAME];
@@ -89,7 +89,7 @@ $AUTH_JWT_3_ROLE = null;
 
 $AUTH_JWT_3_COOKIENAME = "AUTH_JWT_3";
 
-$AUTH_JWT_3_KEY = file_get_contents("keys/jwt3.txt");
+$AUTH_JWT_3_KEY = file_get_contents("pages/keys/jwt3.txt");
 
 if (isset($_COOKIE[$AUTH_JWT_3_COOKIENAME])) {
   $token = $_COOKIE[$AUTH_JWT_3_COOKIENAME];
@@ -113,7 +113,7 @@ if (isset($_POST["form"])) {
 
       if ($username == "admin") {
         return header("Location: {$pth}&sserr=1");
-      } 
+      }
 
       $hash = md5($username);
       $date = date("d-m-Y");
@@ -142,6 +142,10 @@ if (isset($_POST["form"])) {
 
       // Save back to file
       file_put_contents($SESSIONFILE, json_encode($sessions, JSON_PRETTY_PRINT));
+
+      if (isset($_GET["sserr"])) {
+        $pth = substr($pth, 0, -8);
+      }
     }
   } elseif ($form == "jwt_auth_1") {
     $username = $_POST['username'];
@@ -177,8 +181,8 @@ if (isset($_POST["form"])) {
 <p>Session authentication works by assigning you some sort of token and then the server holds some data associated to the token. Typically it looks like this:</p>
 
 <ul>
-  <li><p class="mono">aff31...</p> => name: Admin, role: admin</li>
-  <li><p class="mono">44e5a...</p> => name: Tom, role: user</li>
+  <li><p><span class="mono">aff31...</span> => name: Admin, role: admin</p></li>
+  <li><p><span class="mono">44e5a...</span> => name: Tom, role: user</p></li>
 </ul>
 
 <p>Since the data is on the server side, we cannot manipulate it. Can we however manipulate the token (called ssid or sessionid)?</p>
@@ -229,6 +233,19 @@ if (isset($_POST["form"])) {
   </form>
 </div>
 
+<p>Some hints for you</p>
+
+<ul>
+  <li><p>First analyze your own cookie, can you see where all 3 parts come from?</p></li>
+  <li><p>You can simply figure out all the parts except for one, this one, you just have to try all combinations</p></li>
+  <li><p>Note: When trying the combinations</p>
+    <ol>
+      <li><p>Change the cookie</p></li>
+      <li><p>Refresh the page (Send new request)</p></li>
+    </ol>
+  </li>
+</ul>
+
 <h3>JWT tokens</h3>
 
 <p>Json Web Tokens are tokens which hold some information. The token in the original Vuln app was basically a JWT, but <b>it wasn't signed</b>.</p>
@@ -236,7 +253,7 @@ if (isset($_POST["form"])) {
 <p>The signature is some control value. To compute this value, you need some secret key that the server uses. The exact signature depends on the used algorithm. These are the main ones:</p>
 
 <ul>
-  <li><p>none - Don't check the signature (ignore it)</p></li>
+  <li><p>none - Don't check the signature (ignore the signature)</p></li>
   <li><p>HS - HMAC, compute hash with the secret key, only the server with the key can verify it</p></li>
   <li><p>RS - RSA signature, uses private key for signing, anyone can verify the token with public key</p></li>
 </ul>
@@ -253,8 +270,6 @@ if (isset($_POST["form"])) {
   <li><p>White - This is the signature</p></li>
 </ul>
 
-<b>For easy work with JWT tokens, I recommend you find a website like <a href="https://jwt.rocks/" target="_blank">this one</a>.</b>
-
 <p>Now let's try various ways of breaking it.</p>
 
 <h3>"alg": "none"</h3>
@@ -266,6 +281,8 @@ if (isset($_POST["form"])) {
   <li><p>Change its <span class="mono">'alg'</span> value to <span class="mono">'none'</span></p></li>
   <li><p>Change your role to admin</p></li>
 </ol>
+
+<p>Note: It's just a few quick encodes and decodes, you can do it manually.</p>
 
 <div class="subpage-container">
   <p>Login JWT 1</p>
@@ -289,6 +306,8 @@ if (isset($_POST["form"])) {
   </form>
 </div>
 
+<p>This attack is incredibly simple to execute, so most modern jwt libraries will ignore JWT tokens with <span class="mono">'none'</span> set.</p>
+
 <h3>JWT confusion attack</h3>
 
 <p>And we don't have to change the topic from the algorithms yet. There is still one more trick up my sleeve. The JWT confusion attack!</p>
@@ -308,10 +327,14 @@ if (isset($_POST["form"])) {
 
 <p>Your task is once again to have the app recognize your role as admin.</p>
 
+<b>For easy work with JWT tokens, I recommend you find a website like <a href="https://www.jwt.io" target="_blank">this one</a>.</b>
+
 <p>Note: you could just do the 'none' attack again, but what would you learn from it?</p>
 
+<b>RSA public key below (use this exact form)</b>
+
 <?php
-echo "<p class=\"mono\">{$AUTH_JWT_2_PUB_KEY}</p>";
+echo "<p class=\"mono\" style='word-wrap: break-word;'>{$AUTH_JWT_2_PUB_KEY}</p>";
 ?>
 
 <div class="subpage-container">
@@ -377,3 +400,5 @@ echo "<p class=\"mono\">{$AUTH_JWT_2_PUB_KEY}</p>";
     ?>
   </form>
 </div>
+
+<p>Note: By default the LFI serves from the uploads folder - so go one dir above and then keys/...</p>

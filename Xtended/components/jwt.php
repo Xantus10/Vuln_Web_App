@@ -80,7 +80,7 @@ class JWT
                 return hash_equals($expected, $signature);
 
             case 'RS256':
-                return openssl_verify($data, $signature, $key, OPENSSL_ALGO_SHA256) === 1;
+                return openssl_verify($data, $signature, "-----BEGIN PUBLIC KEY-----\n$key\n-----END PUBLIC KEY-----", OPENSSL_ALGO_SHA256) === 1;
 
             default:
                 return false;
