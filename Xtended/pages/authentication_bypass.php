@@ -82,6 +82,26 @@ if (isset($_COOKIE[$AUTH_JWT_2_COOKIENAME])) {
   }
 }
 
+### JWT 3
+
+$AUTH_JWT_3 = null;
+$AUTH_JWT_3_ROLE = null;
+
+$AUTH_JWT_3_COOKIENAME = "AUTH_JWT_3";
+
+$AUTH_JWT_3_KEY = file_get_contents("keys/jwt3.txt");
+
+if (isset($_COOKIE[$AUTH_JWT_3_COOKIENAME])) {
+  $token = $_COOKIE[$AUTH_JWT_3_COOKIENAME];
+  if (!JWT::verify($token, $AUTH_JWT_3_KEY)) {
+    $AUTH_JWT_3 = false;
+  } else {
+    $data = JWT::decode($token);
+    $AUTH_JWT_3 = $data['payload']['username'];
+    $AUTH_JWT_3_ROLE = $data['payload']['role'];
+  }
+}
+
 ### Form submission
 
 if (isset($_POST["form"])) {
@@ -135,6 +155,12 @@ if (isset($_POST["form"])) {
     $token = JWT::sign(["username" => $username, "role" => "user"], $AUTH_JWT_2_PRIV_KEY, "RS256");
 
     setcookie($AUTH_JWT_2_COOKIENAME, $token);
+  } elseif ($form == "jwt_auth_3") {
+    $username = $_POST['username'];
+
+    $token = JWT::sign(["username" => $username, "role" => "user"], $AUTH_JWT_3_KEY, "HS256");
+
+    setcookie($AUTH_JWT_3_COOKIENAME, $token);
   }
 
   return header("Location: {$pth}");
@@ -227,6 +253,8 @@ if (isset($_POST["form"])) {
   <li><p>White - This is the signature</p></li>
 </ul>
 
+<b>For easy work with JWT tokens, I recommend you find a website like <a href="https://jwt.rocks/" target="_blank">this one</a>.</b>
+
 <p>Now let's try various ways of breaking it.</p>
 
 <h3>"alg": "none"</h3>
@@ -313,3 +341,39 @@ echo "<p class=\"mono\">{$AUTH_JWT_2_PUB_KEY}</p>";
 <p>Finally, as you can probably guess, the whole security of JWT depends on the <b>secret</b> key. But guess what? This secret key has to be stored somewhere. And if it happens to be in a file, then you could read it with something like LFI!</p>
 
 <p>That is why LFI is such a dangerous vulnerability. Not because the attacker can read <span class="mono">/etc/passwd</span> and find out there is a user named bob, but because it can lead to leakage of other secret keys / data. Therefore things can escalate from "I can only read some files with LFI" to "I can craft JWT and get web admin privileges".</p>
+
+<p>So, knowing that the directory sturcture looks something like this:</p>
+
+<ul>
+  <li><p>lfi.php - The source script</p></li>
+  <li><p>uploads - Folder for uploaded materials</p></li>
+  <li><p>keys</p>
+    <ul>
+      <li><p>jwt3.txt - I wonder what could be hidden here?</p></li>
+    </ul>
+  </li>
+</ul>
+
+<p>Can you get the key with LFI and then sign your own JWT token?</p>
+
+<div class="subpage-container">
+  <p>Login JWT 3</p>
+  <form action="" method="post">
+    <input type="hidden" name="form" value="jwt_auth_3">
+    <label for="username">Username: </label>
+    <input type="text" name="username" id="username" placeholder="User123" required><br>
+    <input type="submit">
+    <?php
+      if (isset($AUTH_JWT_3)) {
+        if (!$AUTH_JWT_3) {
+          echo "<p class=\"red\">Your JWT token is invalid!</p>";
+        } else {
+          echo "<p class=\"green\">Logged in as {$AUTH_JWT_3}</p>";
+          if (isset($AUTH_JWT_3_ROLE)) {
+            echo "<p class=\"green\">Your role is $AUTH_JWT_3_ROLE</p>";
+          }
+        }
+      }
+    ?>
+  </form>
+</div>
