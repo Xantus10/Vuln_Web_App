@@ -103,21 +103,6 @@
 
 <p>But what if we included all the separators we can think about?</p>
 
-<p>There is a few more tricks up our sleeves - Look back at the list of special characters on this site. There is the option to use backticks or $() to inject command OUTPUT into the command line. We can inject the character ';' in its hex form like this: $(echo -e "\x3b").</p>
+<p>There is a few more tricks up our sleeves - Look back at the list of special characters on this site. There is the option to use backticks or $() to inject command OUTPUT into the command line. We can even inject blacklisted characters like ';' in their hex form like this: $(echo -e "\x3b") and use eval to evaluate them.</p>
 
-<p>The problem is it will not get interpreted. It will be passed as a string. Now is where you have to get creative and where your knowledge will have to shine.</p>
-
-<p>This is a problem that you could see in some CTFs and I will not torture you to find a solution (although you are welcome to try!)</p>
-
-<div class="subpage-container">
-  <p>Final `` or $() expansion</p>
-  <form action="" method="get">
-    <input type="hidden" name="p" value="rce">
-    <input type="hidden" name="prot" value="exp">
-    <label for="ip">IP: </label>
-    <input type="text" name="ip" id="ip" placeholder="127.0.0.1" required><br>
-    <input type="submit">
-  </form>
-</div>
-
-<p>My solution (there may be other solutions) is as follows: To avoid stderr, we have to pass a valid IP address at the end. Up until then we can use series of <span class="mono">eval</span> and <span class="mono">echo</span> statements to bypass shell filters and chain multiple commands.</p>
+<p>Note that you always get your command executed this way, the only problem is that in our particular example you lose the ability to see the output, because your output will get passed as a string to the ping function and that's where the program will collapse. You can still issue no-output commands like touch or establish a reverse shell using this though.</p>
