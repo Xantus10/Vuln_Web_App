@@ -6,7 +6,8 @@ define("PAGES", ["home" => ["file" => "home.php", "name" => "Home"],
                                       "lfi" => ["file" => "lfi.php", "name" => "LFI"],
                                       "auth" => ["file" => "authentication_bypass.php", "name" => "Authentication Bypass"],
                                       "upload" => ["file" => "upload.php", "name" => "Vulnerable Upload"],
-                                      "rce" => ["file" => "rce.php", "name" => "RCE"]]);
+                                      "rce" => ["file" => "rce.php", "name" => "RCE"],
+                                      "&SEP&" => []]);
 
 /**
  * Default page

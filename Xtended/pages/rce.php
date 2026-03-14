@@ -10,10 +10,10 @@
       if (preg_match('/[;|&><]/', $ip)) {
         echo "<p class=\"red\">Contains prohibited characters</p>";
       } else {
-        system("ping {$arg} {$ip}");
+        system("ping {$arg} 4 {$ip}");
       }
     } else {
-      system("ping {$arg} {$ip}");
+      system("ping {$arg} 4 {$ip}");
     }
 
     echo "</div>";
@@ -24,6 +24,8 @@
 <h2>RCE</h2>
 
 <p>Following up on the previous topic of web shells, let's discuss RCE.</p>
+
+<b>Disclaimer: This article is meant to be about Linux CLI. Some functionality may be different when running on Windows. (When the server is on Windows)</b>
 
 <p>As you probably already know, RCE (Remote Code Execution) is a vulnerability that leads to you being able to execute commands on the remote server - Therefore achieving practically the best state you can be in. The only thing stopping you now are the local privileges. A good web application will be running as unprivileged user. Then, you would need to achieve privilege escalation. If the web server is running as root though (and you can find amateur servers like these), you can do anything you want!</p>
 
@@ -36,7 +38,7 @@
 <p>Our example includes the following code:</p>
 
 <p class="mono">$ip = $_GET["ip"];</p>
-<p class="mono">system("ping -c {$ip}");</p>
+<p class="mono">system("ping -c 4 {$ip}");</p>
 
 <p>This expects an ip address in the input (like <span class="mono">127.0.0.1</span>). However, we have control over the raw command line. In command line, there are other characters you can input, not just commands.</p>
 
@@ -86,7 +88,7 @@
 
 <p class="mono">$blacklist = [';', '|', '&', '>', '<']</p>
 
-<p>So what now? There is still a separator the developer forgot about! Can you figure it out? THe answer in base64 is: QSBzaW1wbGUKbmV3bGluZQ==</p>
+<p>So what now? There is still a separator the developer forgot about! Can you figure it out? The answer in base64 is: QSBzaW1wbGUKbmV3bGluZQ==</p>
 
 <p>Note: You will have to URL-encode the character and pass it directly through URL.</p>
 
@@ -105,4 +107,4 @@
 
 <p>There is a few more tricks up our sleeves - Look back at the list of special characters on this site. There is the option to use backticks or $() to inject command OUTPUT into the command line. We can even inject blacklisted characters like ';' in their hex form like this: $(echo -e "\x3b") and use eval to evaluate them.</p>
 
-<p>Note that you always get your command executed this way, the only problem is that in our particular example you lose the ability to see the output, because your output will get passed as a string to the ping function and that's where the program will collapse. You can still issue no-output commands like touch or establish a reverse shell using this though.</p>
+<p>Note that you always get your command executed this way, the only problem is that in our particular example you lose the ability to see the output, because your output will get passed as a string to the ping function and that's where the program will collapse. You can still issue no-output commands like <span class="mono">touch</span> or establish a reverse shell using this though.</p>
