@@ -7,7 +7,8 @@ define("PAGES", ["home" => ["file" => "home.php", "name" => "Home"],
                                       "auth" => ["file" => "authentication_bypass.php", "name" => "Authentication Bypass"],
                                       "upload" => ["file" => "upload.php", "name" => "Vulnerable Upload"],
                                       "rce" => ["file" => "rce.php", "name" => "RCE"],
-                                      "&SEP&" => []]);
+                                      "&SEP&" => [],
+                                      "tools" => ["file" => "tools.php", "name" => "Tools"]]);
 
 /**
  * Default page
