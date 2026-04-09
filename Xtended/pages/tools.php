@@ -29,3 +29,41 @@
 <h3>Hydra</h3>
 
 <p><a href="https://www.kali.org/tools/hydra/" target="_blank">Hydra</a> is a login brute force tool. It supports a variety of protocols (ftp, shh) and various HTTP brute forces.</p>
+
+<h4>Usage</h4>
+
+<p>Our usage will focus on web burteforce.</p>
+
+<p>To bruteforce a standard login form, you may enter the following:</p>
+
+<p class="mono">hydra -l USERNAME -P PASS_LIST TARGET http-post-form "PATH:PARAMS:FAIL_STR"</p>
+
+<p>Let's dissect this</p>
+
+<ul>
+  <li>The -l option is used to pass the target username (Use -L to pass a list instead)</li>
+  <li>The -P option is used to pass a list of passwords (Use -p to pass a single pass instead)</li>
+  <li>The TARGET value will be just the raw domain name or IP (No http://, no path like /login)</li>
+  <li>The next value is the attack mode, for us the interesting modes are http-get-form and http-post-form</li>
+  <li>The next arg is a single string containing all the other options, the first item is PATH and is the HTTP path (like /wp-admin)</li>
+  <li>The PARAMS arg is a string containing raw request body, for form structure it like: <span class="mono">username=^USER^&passwd=^PASS^</span> (The ^USER^ is a placeholder value, hydra will replace it in requests. The name of the form items might change - user/username/un/usrn)</li>
+  <li>The FAIL_STR is a simple string that the site only returns on unsuccessful login</li>
+</ul>
+
+<p>Filled in, it might look like this:</p>
+
+<p class="mono">hydra -l <span class="green">admin</span> -P <span class="green">/usr/share/wordlists/rockyou.txt</span> <span class="red">example.com</span> http-post-form "<span class="green">/login</span>:<span class="red">usr=^USER^&password=^PWD^&othervalue=abc</span>:<span class="green">Incorrect</span>"</p>
+
+This is the main part of hydra. Below are some advanced functions.
+
+<b>To get help about the advanced options for a module, try: <span class="mono">hydra -U &lt;module&gt;</span></b>
+
+<b>Condition</b>
+
+<p>You can specify the third string argument as 'F=' (failure) or 'S=' (success). So if you instead of fail string want to provide success string, you can use:</p>
+
+<p class="mono">...:S=Logged in"</p>
+
+<b>Passing headers (Cookies)</b>
+
+<p>In the options string pass a fourth, colon delimited, argument (So "PATH:PARAMS:FAIL_STR:OTHER"). This argument will specify <span class="mono">H=Cookie\: cookiename=cookievalue</span></p>
